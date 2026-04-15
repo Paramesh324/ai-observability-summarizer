@@ -4,7 +4,7 @@ WORKDIR /app
 
 USER root
 
-# Install system dependencies for WeasyPrint (matching metrics-api approach)
+# Install system dependencies for WeasyPrint and pandas build on s390x
 RUN dnf install -y \
     fontconfig \
     harfbuzz \
@@ -19,9 +19,16 @@ RUN dnf install -y \
     gcc-c++ \
     libffi-devel \
     dejavu-sans-fonts \
+    gcc-gfortran \
+    openblas-devel \
+    lapack \
+    openssl-devel \
     && dnf clean all
 
 USER 1001
+
+# Use system OpenSSL instead of BoringSSL for s390x compatibility
+ENV GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
 
 # Copy and install Python dependencies via pip using requirements.txt
 COPY mcp_server/requirements.txt /app/requirements.txt

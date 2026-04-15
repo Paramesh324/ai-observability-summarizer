@@ -15,6 +15,8 @@ REGISTRY ?= quay.io
 ORG ?= ecosystem-appeng
 IMAGE_PREFIX ?= aiobs
 VERSION ?= 2.0.0
+# PLATFORM can be overridden for different architectures
+# Examples: linux/amd64 (default), linux/arm64, linux/s390x, linux/ppc64le
 PLATFORM ?= linux/amd64
 DEV_MODE ?= false
 
@@ -281,7 +283,7 @@ help:
 	@echo "  ORG                - Account or org name (default: ecosystem-appeng)"
 	@echo "  IMAGE_PREFIX       - Image prefix (default: aiobs)"
 	@echo "  VERSION            - Image version (default: $(VERSION))"
-	@echo "  PLATFORM           - Target platform (default: linux/amd64)"
+	@echo "  PLATFORM           - Target platform (default: linux/amd64, options: linux/s390x, linux/arm64, linux/ppc64le)"
 	@echo "  BUILD_TOOL         - Build tool: docker or podman (auto-detected)"
 	@echo "  NAMESPACE          - OpenShift namespace for deployment"
 	@echo "  DEV_MODE           - Set to 'true' to deploy React UI only, 'false' for Console Plugin only (default: false)"
@@ -310,19 +312,21 @@ build: build-alerting build-mcp-server build-console-plugin build-react-ui
 .PHONY: build-alerting
 build-alerting:
 	@echo "🔨 Building Alerting Service (metric-alerting)..."
-	@$(BUILD_TOOL) buildx build --platform $(PLATFORM) \
-		-f src/alerting/Dockerfile \
-		-t $(METRICS_ALERTING_IMAGE):$(VERSION) \
-		src
+	@if [ "$(BUILD_TOOL)" = "podman" ]; then \
+		$(BUILD_TOOL) build --platform $(PLATFORM) -f src/alerting/Dockerfile -t $(METRICS_ALERTING_IMAGE):$(VERSION) src; \
+	else \
+		$(BUILD_TOOL) buildx build --platform $(PLATFORM) -f src/alerting/Dockerfile -t $(METRICS_ALERTING_IMAGE):$(VERSION) src; \
+	fi
 	@echo "✅ metrics-alerting image built: $(METRICS_ALERTING_IMAGE):$(VERSION)"
 
 .PHONY: build-mcp-server
 build-mcp-server:
 	@echo "🔨 Building MCP Server (mcp-server)..."
-	@$(BUILD_TOOL) buildx build --platform $(PLATFORM) \
-		-f src/mcp_server/Dockerfile \
-		-t $(MCP_SERVER_IMAGE):$(VERSION) \
-		src
+	@if [ "$(BUILD_TOOL)" = "podman" ]; then \
+		$(BUILD_TOOL) build --platform $(PLATFORM) -f src/mcp_server/Dockerfile -t $(MCP_SERVER_IMAGE):$(VERSION) src; \
+	else \
+		$(BUILD_TOOL) buildx build --platform $(PLATFORM) -f src/mcp_server/Dockerfile -t $(MCP_SERVER_IMAGE):$(VERSION) src; \
+	fi
 	@echo "✅ mcp-server image built: $(MCP_SERVER_IMAGE):$(VERSION)"
 
 .PHONY: build-console-plugin
@@ -333,10 +337,11 @@ build-console-plugin:
 	@echo "  → Building plugin assets..."
 	@cd openshift-plugin && yarn build
 	@echo "  → Building container image..."
-	@$(BUILD_TOOL) buildx build --platform $(PLATFORM) \
-		-f openshift-plugin/Dockerfile.plugin \
-		-t $(CONSOLE_PLUGIN_IMAGE):$(VERSION) \
-		openshift-plugin
+	@if [ "$(BUILD_TOOL)" = "podman" ]; then \
+		$(BUILD_TOOL) build --platform $(PLATFORM) -f openshift-plugin/Dockerfile.plugin -t $(CONSOLE_PLUGIN_IMAGE):$(VERSION) openshift-plugin; \
+	else \
+		$(BUILD_TOOL) buildx build --platform $(PLATFORM) -f openshift-plugin/Dockerfile.plugin -t $(CONSOLE_PLUGIN_IMAGE):$(VERSION) openshift-plugin; \
+	fi
 	@echo "✅ console-plugin image built: $(CONSOLE_PLUGIN_IMAGE):$(VERSION)"
 
 .PHONY: build-react-ui
@@ -347,10 +352,11 @@ build-react-ui:
 	@echo "  → Building React UI assets..."
 	@cd openshift-plugin && yarn build:react-ui
 	@echo "  → Building container image..."
-	@$(BUILD_TOOL) buildx build --platform $(PLATFORM) \
-		-f openshift-plugin/Dockerfile.react-ui \
-		-t $(REACT_UI_IMAGE):$(VERSION) \
-		openshift-plugin
+	@if [ "$(BUILD_TOOL)" = "podman" ]; then \
+		$(BUILD_TOOL) build --platform $(PLATFORM) -f openshift-plugin/Dockerfile.react-ui -t $(REACT_UI_IMAGE):$(VERSION) openshift-plugin; \
+	else \
+		$(BUILD_TOOL) buildx build --platform $(PLATFORM) -f openshift-plugin/Dockerfile.react-ui -t $(REACT_UI_IMAGE):$(VERSION) openshift-plugin; \
+	fi
 	@echo "✅ react-ui image built: $(REACT_UI_IMAGE):$(VERSION)"
 
 .PHONY: push
