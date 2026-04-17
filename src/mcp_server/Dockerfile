@@ -5,7 +5,7 @@ WORKDIR /app
 USER root
 
 # Install system dependencies for WeasyPrint and pandas build on s390x
-RUN dnf install -y \
+RUN dnf install -y --allowerasing \
     fontconfig \
     harfbuzz \
     pango \
@@ -23,6 +23,7 @@ RUN dnf install -y \
     openblas-devel \
     lapack \
     openssl-devel \
+    curl \
     && dnf clean all
 
 USER 1001

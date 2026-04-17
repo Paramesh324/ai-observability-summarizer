@@ -3,6 +3,11 @@ replicaCount: 1
 deployment:
   name: aiobs-mcp-server  # Fixed name for consistent service selector
 
+# OpenTelemetry auto-instrumentation
+# Set to false on s390x due to compatibility issues with native libraries
+opentelemetry:
+  autoInstrumentation: false
+
 image:
   repository: quay.io/ecosystem-appeng/aiobs-mcp-server
   tag: 2.0.0

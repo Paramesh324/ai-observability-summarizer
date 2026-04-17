@@ -14,6 +14,11 @@ spec:
       maxUnavailable: 0
   template:
     metadata:
+      annotations:
+        {{- if not .Values.opentelemetry.autoInstrumentation }}
+        # Disable OpenTelemetry auto-instrumentation (required for s390x compatibility)
+        instrumentation.opentelemetry.io/inject-python: "false"
+        {{- end }}
       labels:
         app: {{ .Values.deployment.name | default "aiobs-mcp-server" }}
     spec:
