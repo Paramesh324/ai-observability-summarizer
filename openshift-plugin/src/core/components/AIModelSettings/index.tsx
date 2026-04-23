@@ -104,7 +104,7 @@ export const AIModelSettings: React.FC<AIModelSettingsProps> = ({
       const providers = { ...initialProviders };
       
       // Check each external provider for existing secrets
-      for (const provider of ['openai', 'anthropic', 'google', 'meta', 'other'] as const) {
+      for (const provider of ['openai', 'anthropic', 'google', 'meta', 'ibm', 'other'] as const) {
         const secretStatus = await secretManager.checkProviderSecret(provider);
 
         // Determine storage type based on dev mode

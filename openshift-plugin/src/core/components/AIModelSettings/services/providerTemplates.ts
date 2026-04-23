@@ -58,6 +58,17 @@ export const PROVIDER_TEMPLATES: Record<Provider, ProviderTemplate> = {
     commonModels: ['llama-2-7b', 'llama-2-13b', 'llama-2-70b', 'llama-3-8b'],
     documentationUrl: 'https://llama.meta.com/docs/',
   },
+  ibm: {
+    provider: 'ibm',
+    label: 'IBM BOB',
+    description: 'IBM BOB - IBM\'s internal AI assistant',
+    defaultEndpoint: 'https://api.openai.com/v1/chat/completions',
+    requiresApiKey: true,
+    iconClass: 'fa-robot',
+    color: '#0f62fe',
+    commonModels: ['bob'],
+    documentationUrl: '',
+  },
   internal: {
     provider: 'internal',
     label: 'Cluster Models',
@@ -129,6 +140,9 @@ export const detectProvider = (modelName: string): Provider => {
   if (lowerName.includes('llama') || lowerName.includes('meta')) {
     return 'meta';
   }
+  if (lowerName.includes('bob') || lowerName.includes('ibm')) {
+    return 'ibm';
+  }
   
   return 'internal';
 };
@@ -155,6 +169,8 @@ export const isValidApiKey = (provider: Provider, apiKey: string): boolean => {
       return apiKey.length > 20; // Google API keys vary in format
     case 'meta':
       return apiKey.length > 10; // Meta API keys vary in format
+    case 'ibm':
+      return apiKey.length > 10; // IBM API keys vary in format
     default:
       return apiKey.length > 10; // Generic validation
   }
