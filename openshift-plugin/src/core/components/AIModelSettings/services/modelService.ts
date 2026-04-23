@@ -402,6 +402,7 @@ class ModelService {
         anthropic: { provider: 'anthropic', status: 'missing', storage: 'none' },
         google: { provider: 'google', status: 'missing', storage: 'none' },
         meta: { provider: 'meta', status: 'missing', storage: 'none' },
+        ibm: { provider: 'ibm', status: 'missing', storage: 'none' },
         internal: { provider: 'internal', status: 'configured', storage: 'none' },
         other: { provider: 'other', status: 'missing', storage: 'none' },
       },
