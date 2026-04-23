@@ -24,6 +24,8 @@ def _provider_defaults(provider: str) -> Dict[str, str]:
         return {"endpoint": "https://generativelanguage.googleapis.com/v1beta/models"}
     if provider == "meta":
         return {"endpoint": "https://api.llama-api.com/v1/models"}
+    if provider == "ibm":
+        return {"endpoint": "https://api.openai.com/v1/models"}  # IBM BOB uses OpenAI-compatible API
     return {"endpoint": ""}
 
 
@@ -44,8 +46,8 @@ def validate_api_key(provider: str, api_key: str, endpoint: Optional[str] = None
         ok = False
         details: Dict[str, Any] = {"provider": provider_lower, "endpoint": ep}
 
-        if provider_lower == "openai":
-            # GET /v1/models with Bearer token
+        if provider_lower == "openai" or provider_lower == "ibm":
+            # GET /v1/models with Bearer token (IBM BOB uses OpenAI-compatible API)
             r = requests.get(ep, headers={"Authorization": f"Bearer {api_key}"}, timeout=timeout)
             ok = r.status_code in (200, 401, 403) and r.status_code != 401  # 401 indicates invalid
             details["status"] = r.status_code
