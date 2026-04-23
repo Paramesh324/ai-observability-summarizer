@@ -12,6 +12,7 @@ from .tool_executor import ToolExecutor
 from .anthropic_bot import AnthropicChatBot
 from .openai_bot import OpenAIChatBot
 from .google_bot import GoogleChatBot
+from .ibm_bot import IBMBobChatBot
 from .llama_bot import LlamaChatBot
 from .deterministic_bot import DeterministicChatBot
 from common.pylogger import get_python_logger
@@ -89,6 +90,7 @@ def create_chatbot(
             - Anthropic: "anthropic/", "claude"
             - OpenAI: "openai/", "gpt-", "o1-"
             - Google: "google/", "gemini"
+            - IBM: "ibm/", "bob"
 
         Local Models (Llama):
             - Llama 3.1/3.3: Uses LlamaChatBot (tool calling capable)
@@ -105,7 +107,8 @@ def create_chatbot(
     PROVIDER_PATTERNS = {
         "anthropic": [("anthropic/", False), ("claude", False)],
         "openai": [("openai/", False), ("gpt-", True), ("o1-", True)],
-        "google": [("google/", False), ("gemini", False)]
+        "google": [("google/", False), ("gemini", False)],
+        "ibm": [("ibm/", False), ("bob", False)]
     }
 
     model_lower = model_name.lower()
@@ -132,6 +135,9 @@ def create_chatbot(
         elif provider == "google":
             logger.info(f"Creating GoogleChatBot for {model_name}")
             return GoogleChatBot(model_name, api_key, tool_executor)
+        elif provider == "ibm":
+            logger.info(f"Creating IBMBobChatBot for {model_name}")
+            return IBMBobChatBot(model_name, api_key, tool_executor)
         else:
             logger.warning(f"Unknown external provider {provider}, using OpenAI as fallback")
             return OpenAIChatBot(model_name, api_key, tool_executor)

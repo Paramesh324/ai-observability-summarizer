@@ -1,4 +1,17 @@
 {
+  "ibm/bob": {
+    "external": true,
+    "requiresApiKey": true,
+    "serviceName": null,
+    "provider": "ibm",
+    "apiUrl": "https://api.openai.com/v1/chat/completions",
+    "modelName": "gpt-4o-mini",
+    "cost": {
+      "prompt_rate": 0.0,
+      "output_rate": 0.0
+    },
+    "description": "IBM BOB - IBM's internal AI assistant"
+  },
   "openai/gpt-4o-mini": {
     "external": true,
     "requiresApiKey": true,
