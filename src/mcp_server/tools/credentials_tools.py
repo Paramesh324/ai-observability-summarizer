@@ -25,7 +25,7 @@ def _provider_defaults(provider: str) -> Dict[str, str]:
     if provider == "meta":
         return {"endpoint": "https://api.llama-api.com/v1/models"}
     if provider == "ibm":
-        return {"endpoint": "https://api.openai.com/v1/models"}  # IBM BOB uses OpenAI-compatible API
+        return {"endpoint": "https://bob.ibm.com/api/v1/models"}  # IBM BOB endpoint for validation
     return {"endpoint": ""}
 
 
