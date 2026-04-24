@@ -31,15 +31,28 @@ class IBMBobChatBot(BaseChatBot):
         self,
         model_name: str,
         api_key: Optional[str] = None,
-        tool_executor: ToolExecutor = None):
+        tool_executor: ToolExecutor = None,
+        api_url: Optional[str] = None):
         super().__init__(model_name, api_key, tool_executor)
 
-        # Import OpenAI SDK (IBM BOB uses OpenAI-compatible API)
+        # Import OpenAI SDK (IBM WatsonX.ai uses OpenAI-compatible API)
         self._sdk_import_failed = False
         try:
             from openai import OpenAI
-            # Get IBM BOB API endpoint from environment or use default
-            api_base = os.getenv("IBM_BOB_API_BASE", "https://api.openai.com/v1")
+            
+            # Get API endpoint from parameter, environment, or model config
+            api_base = api_url
+            if not api_base:
+                api_base = os.getenv("IBM_BOB_API_BASE")
+            if not api_base:
+                # Try to get from model config
+                from core.model_config_manager import get_model_config
+                model_config = get_model_config(model_name)
+                if model_config and "apiUrl" in model_config:
+                    api_base = model_config["apiUrl"]
+                    logger.info(f"Using API URL from model config: {api_base}")
+            if not api_base:
+                api_base = "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat"  # WatsonX.ai default
             
             # Only create client if API key is provided
             if self.api_key:
@@ -47,7 +60,7 @@ class IBMBobChatBot(BaseChatBot):
                     api_key=self.api_key,
                     base_url=api_base
                 )
-                logger.info(f"IBM BOB client initialized with endpoint: {api_base}")
+                logger.info(f"IBM WatsonX.ai client initialized with endpoint: {api_base}")
             else:
                 self.client = None
         except ImportError:
