@@ -1,16 +1,29 @@
 {
-  "ibm/bob": {
+  "ibm/llama-3-1-70b-instruct": {
     "external": true,
     "requiresApiKey": true,
     "serviceName": null,
     "provider": "ibm",
-    "apiUrl": "https://api.openai.com/v1/chat/completions",
-    "modelName": "gpt-4o-mini",
+    "apiUrl": "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat",
+    "modelName": "meta-llama/llama-3-1-70b-instruct",
     "cost": {
       "prompt_rate": 0.0,
       "output_rate": 0.0
     },
-    "description": "IBM BOB - IBM's internal AI assistant"
+    "description": "Meta Llama 3.1 70B Instruct via IBM WatsonX.ai"
+  },
+  "ibm/granite-13b-chat-v2": {
+    "external": true,
+    "requiresApiKey": true,
+    "serviceName": null,
+    "provider": "ibm",
+    "apiUrl": "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat",
+    "modelName": "ibm/granite-13b-chat-v2",
+    "cost": {
+      "prompt_rate": 0.0,
+      "output_rate": 0.0
+    },
+    "description": "IBM Granite 13B Chat v2 via IBM WatsonX.ai"
   },
   "openai/gpt-4o-mini": {
     "external": true,
