@@ -137,7 +137,10 @@ def create_chatbot(
             return GoogleChatBot(model_name, api_key, tool_executor)
         elif provider == "ibm":
             logger.info(f"Creating IBMBobChatBot for {model_name}")
-            return IBMBobChatBot(model_name, api_key, tool_executor)
+            # Fetch project ID from secret for IBM WatsonX.ai
+            from core.api_key_manager import fetch_project_id_from_secret
+            project_id = fetch_project_id_from_secret("ibm")
+            return IBMBobChatBot(model_name, api_key, tool_executor, project_id=project_id)
         else:
             logger.warning(f"Unknown external provider {provider}, using OpenAI as fallback")
             return OpenAIChatBot(model_name, api_key, tool_executor)

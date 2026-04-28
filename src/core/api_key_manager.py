@@ -77,7 +77,7 @@ def fetch_api_key_from_secret(provider: Optional[str]) -> Optional[str]:
     The MCP server's ServiceAccount must have 'get' permission on the secret.
 
     Args:
-        provider: Provider name (openai, anthropic, google, meta)
+        provider: Provider name (openai, anthropic, google, meta, ibm)
 
     Returns:
         API key string or None if not found/accessible
@@ -135,6 +135,74 @@ def fetch_api_key_from_secret(provider: Optional[str]) -> Optional[str]:
         return api_key
     except Exception as e:
         logger.debug(f"Failed to fetch API key from secret: {e}")
+        return None
+
+
+def fetch_project_id_from_secret(provider: Optional[str]) -> Optional[str]:
+    """Fetch provider project ID from Kubernetes Secret (for IBM WatsonX.ai).
+
+    Retrieves project ID from a namespaced secret with the naming convention:
+        Secret name: ai-<provider>-credentials
+        Secret key: project-id (base64 encoded)
+
+    Args:
+        provider: Provider name (currently only 'ibm' uses project ID)
+
+    Returns:
+        Project ID string or None if not found/accessible
+
+    Note:
+        - Only IBM WatsonX.ai requires a project ID
+        - Returns None for other providers
+    """
+    try:
+        if not provider or provider != "ibm":
+            return None
+
+        # Get namespace from environment
+        ns = os.getenv("NAMESPACE", "")
+        if not ns:
+            logger.debug("NAMESPACE not set, cannot fetch project ID from secret")
+            return None
+
+        secret_name = f"ai-{provider}-credentials"
+
+        # Read service account token
+        token = ""
+        try:
+            with open(K8S_SA_TOKEN_PATH, "r") as f:
+                token = f.read().strip()
+        except Exception as e:
+            logger.debug(f"Could not read service account token: {e}")
+            return None
+
+        if not token:
+            logger.debug("Service account token is empty")
+            return None
+
+        # Prepare request to Kubernetes API
+        headers = {"Authorization": f"Bearer {token}"}
+        verify = K8S_SA_CA_PATH if os.path.exists(K8S_SA_CA_PATH) else True
+        url = f"{K8S_API_URL}/api/v1/namespaces/{ns}/secrets/{secret_name}"
+
+        # Fetch secret
+        resp = requests.get(url, headers=headers, timeout=5, verify=verify)
+        if resp.status_code != 200:
+            logger.debug(f"Secret {secret_name} fetch failed: {resp.status_code}")
+            return None
+
+        # Extract and decode project ID
+        data = resp.json().get("data", {})
+        project_id_b64 = data.get("project-id", "")
+        if not project_id_b64:
+            logger.debug(f"Secret {secret_name} does not contain 'project-id' field")
+            return None
+
+        project_id = base64.b64decode(project_id_b64).decode("utf-8").strip()
+        logger.info(f"✅ Retrieved project ID from secret: {secret_name}")
+        return project_id
+    except Exception as e:
+        logger.debug(f"Failed to fetch project ID from secret: {e}")
         return None
 
 

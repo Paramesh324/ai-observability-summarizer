@@ -32,11 +32,14 @@ class IBMBobChatBot(BaseChatBot):
         model_name: str,
         api_key: Optional[str] = None,
         tool_executor: ToolExecutor = None,
-        api_url: Optional[str] = None):
+        api_url: Optional[str] = None,
+        project_id: Optional[str] = None):
         super().__init__(model_name, api_key, tool_executor)
 
         # Import OpenAI SDK (IBM WatsonX.ai uses OpenAI-compatible API)
         self._sdk_import_failed = False
+        self.project_id = None  # WatsonX.ai project ID
+        
         try:
             from openai import OpenAI
             
@@ -54,13 +57,30 @@ class IBMBobChatBot(BaseChatBot):
             if not api_base:
                 api_base = "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat"  # WatsonX.ai default
             
+            # Get WatsonX.ai project ID from parameter or environment
+            self.project_id = project_id or os.getenv("WATSONX_PROJECT_ID")
+            if self.project_id:
+                logger.info(f"WatsonX.ai project ID configured: {self.project_id[:8]}...")
+                # Set as environment variable for the bot instance
+                os.environ["WATSONX_PROJECT_ID"] = self.project_id
+            else:
+                logger.warning("WatsonX.ai project ID not found. API calls may fail.")
+            
             # Only create client if API key is provided
             if self.api_key:
+                # Add project_id as query parameter to base URL if provided
+                if self.project_id:
+                    separator = "&" if "?" in api_base else "?"
+                    api_base_with_project = f"{api_base}{separator}project_id={self.project_id}"
+                    logger.info(f"IBM WatsonX.ai client initialized with endpoint: {api_base} (with project_id)")
+                else:
+                    api_base_with_project = api_base
+                    logger.info(f"IBM WatsonX.ai client initialized with endpoint: {api_base}")
+                
                 self.client = OpenAI(
                     api_key=self.api_key,
-                    base_url=api_base
+                    base_url=api_base_with_project
                 )
-                logger.info(f"IBM WatsonX.ai client initialized with endpoint: {api_base}")
             else:
                 self.client = None
         except ImportError:
