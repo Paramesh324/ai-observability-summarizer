@@ -180,7 +180,7 @@ Wrong flow:
         model_name = self._extract_model_name()
         
         # Prepare request
-        url = f"{self.api_base}?version=2023-05-29"
+        url = self.api_base
         headers = {
             "Authorization": f"Bearer {self.iam_token}",
             "Content-Type": "application/json",
