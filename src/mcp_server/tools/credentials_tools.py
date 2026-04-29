@@ -46,11 +46,31 @@ def validate_api_key(provider: str, api_key: str, endpoint: Optional[str] = None
         ok = False
         details: Dict[str, Any] = {"provider": provider_lower, "endpoint": ep}
 
-        if provider_lower == "openai" or provider_lower == "ibm":
-            # GET /v1/models with Bearer token (IBM BOB uses OpenAI-compatible API)
+        if provider_lower == "openai":
+            # GET /v1/models with Bearer token
             r = requests.get(ep, headers={"Authorization": f"Bearer {api_key}"}, timeout=timeout)
             ok = r.status_code in (200, 401, 403) and r.status_code != 401  # 401 indicates invalid
             details["status"] = r.status_code
+        elif provider_lower == "ibm":
+            # IBM WatsonX.ai requires IAM token exchange
+            # Validate by exchanging API key for IAM token
+            iam_url = "https://iam.cloud.ibm.com/identity/token"
+            iam_data = {
+                "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
+                "apikey": api_key
+            }
+            r = requests.post(
+                iam_url,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data=iam_data,
+                timeout=timeout
+            )
+            ok = r.status_code == 200 and "access_token" in r.json()
+            details["status"] = r.status_code
+            if ok:
+                details["message"] = "IBM Cloud IAM API key is valid"
+            else:
+                details["message"] = "Invalid IBM Cloud IAM API key"
         elif provider_lower == "anthropic":
             # Validate API key by listing models (avoids coupling to specific model ID)
             # This validates key authenticity without requiring access to a specific model
@@ -102,6 +122,7 @@ def save_api_key(
     api_key: str,
     model_id: Optional[str] = None,
     description: Optional[str] = None,
+    project_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Save or update provider API key in a Kubernetes Secret.
@@ -111,13 +132,14 @@ def save_api_key(
 
     Secret format:
       name: ai-<provider>-credentials
-      data: api-key (b64), model-id?, description?
+      data: api-key (b64), model-id?, description?, project-id? (for IBM WatsonX.ai)
 
     Args:
-        provider: Provider name (openai, anthropic, google, meta)
+        provider: Provider name (openai, anthropic, google, meta, ibm)
         api_key: API key to save
         model_id: Optional model identifier
         description: Optional description
+        project_id: Optional project ID (required for IBM WatsonX.ai)
     """
     try:
 
@@ -165,6 +187,8 @@ def save_api_key(
             payload["data"]["model-id"] = base64.b64encode(model_id.encode("utf-8")).decode("utf-8")
         if description:
             payload["data"]["description"] = base64.b64encode(description.encode("utf-8")).decode("utf-8")
+        if project_id:
+            payload["data"]["project-id"] = base64.b64encode(project_id.encode("utf-8")).decode("utf-8")
 
         r = requests.patch(url, headers=headers, data=json.dumps(payload), timeout=5, verify=verify)
         status = "updated"
