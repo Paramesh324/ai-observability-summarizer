@@ -1,16 +1,16 @@
 {
-  "ibm/llama-3-1-70b-instruct": {
+  "ibm/llama-3-3-70b-instruct": {
     "external": true,
     "requiresApiKey": true,
     "serviceName": null,
     "provider": "ibm",
     "apiUrl": "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat",
-    "modelName": "meta-llama/llama-3-1-70b-instruct",
+    "modelName": "meta-llama/llama-3-3-70b-instruct",
     "cost": {
       "prompt_rate": 0.0,
       "output_rate": 0.0
     },
-    "description": "Meta Llama 3.1 70B Instruct via IBM WatsonX.ai"
+    "description": "Meta Llama 3.3 70B Instruct via IBM WatsonX.ai"
   },
   "ibm/granite-13b-chat-v2": {
     "external": true,
