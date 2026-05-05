@@ -199,15 +199,20 @@ Wrong flow:
             payload["tools"] = tools
         
         logger.info(f"Calling WatsonX.ai API: {url}")
-        logger.debug(f"Payload: {json.dumps(payload, indent=2)}")
+        logger.info(f"Request payload: {json.dumps(payload, indent=2)}")
+        logger.info(f"Request headers: Authorization=Bearer *****, Content-Type={headers.get('Content-Type')}")
         
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=60)
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response headers: {dict(response.headers)}")
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
             logger.error(f"WatsonX.ai API error: {e}")
-            logger.error(f"Response: {e.response.text if e.response else 'No response'}")
+            logger.error(f"Response status code: {e.response.status_code if e.response else 'No response'}")
+            logger.error(f"Response text: {e.response.text if e.response else 'No response'}")
+            logger.error(f"Response headers: {dict(e.response.headers) if e.response else 'No headers'}")
             raise
         except Exception as e:
             logger.error(f"Failed to call WatsonX.ai API: {e}")
