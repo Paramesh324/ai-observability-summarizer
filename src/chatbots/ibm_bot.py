@@ -343,7 +343,7 @@ Wrong flow:
                             logger.warning(error_msg)
                             messages.append({
                                 "role": "tool",
-                                "tool_call_id": tool_call.id,
+                                "tool_call_id": tool_call_id,
                                 "content": error_msg
                             })
                             continue
