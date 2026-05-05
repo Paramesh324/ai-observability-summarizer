@@ -84,7 +84,8 @@ class IBMBobChatBot(BaseChatBot):
         if not api_base:
             # Try to get from model config
             from core.model_config_manager import get_model_config
-            model_config = get_model_config(model_name)
+            all_configs = get_model_config()
+            model_config = all_configs.get(model_name)
             if model_config and "apiUrl" in model_config:
                 api_base = model_config["apiUrl"]
                 logger.info(f"Using API URL from model config: {api_base}")
@@ -119,8 +120,12 @@ class IBMBobChatBot(BaseChatBot):
         Override the base class method to return the modelName from config,
         which includes the full path like 'meta-llama/llama-3-3-70b-instruct'.
         """
-        # Get model config to find the actual modelName
-        model_config = get_model_config(self.model_name)
+        # Get full model config dict (all models)
+        all_configs = get_model_config()
+        
+        # Extract the specific model's config
+        model_config = all_configs.get(self.model_name)
+        
         if model_config and "modelName" in model_config:
             return model_config["modelName"]
         
