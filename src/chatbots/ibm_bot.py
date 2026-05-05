@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from .base import BaseChatBot
 from chatbots.tool_executor import ToolExecutor
 from common.pylogger import get_python_logger
+from core.model_config_manager import get_model_config
 
 logger = get_python_logger()
 
@@ -112,6 +113,20 @@ class IBMBobChatBot(BaseChatBot):
         else:
             logger.warning("No API key provided for IBM WatsonX.ai")
 
+    def _extract_model_name(self) -> str:
+        """WatsonX.ai expects the full model name including vendor prefix.
+        
+        Override the base class method to return the modelName from config,
+        which includes the full path like 'meta-llama/llama-3-3-70b-instruct'.
+        """
+        # Get model config to find the actual modelName
+        model_config = get_model_config(self.model_name)
+        if model_config and "modelName" in model_config:
+            return model_config["modelName"]
+        
+        # Fallback: return as-is (don't strip prefix)
+        return self.model_name
+    
     def _get_model_specific_instructions(self) -> str:
         """IBM BOB-specific instructions."""
         return """---
